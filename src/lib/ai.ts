@@ -5,7 +5,7 @@ const OPENROUTER_KEY = 'sk-or-v1-fcc8910ecb29cb2dca661c9ec8ef76395ec1ea6526ebc7d
 
 export const MODELS: ModelOption[] = [
   { id: 'auto', label: 'Auto-Switch', desc: 'Automatically picks the best available model', badge: 'Smart' },
-  { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash', desc: 'Google direct — massive free quota', badge: 'Google' },
+  { id: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash', desc: 'Google direct — massive free quota', badge: 'Google' },
   { id: 'gpt-4o-mini', label: 'GPT-4o mini', desc: 'Fast, capable, great for most tasks', badge: 'OpenRouter' },
   { id: 'claude-3.5-sonnet', label: 'Claude 3.5 Sonnet', desc: 'Excellent reasoning and writing', badge: 'OpenRouter' },
   { id: 'perplexity', label: 'Perplexity', desc: 'Online search-augmented answers', badge: 'OpenRouter' },
@@ -15,7 +15,7 @@ const OPENROUTER_MODELS: Record<string, string> = {
   'gpt-4o-mini': 'openai/gpt-4o-mini',
   'claude-3.5-sonnet': 'anthropic/claude-3.5-sonnet',
   'perplexity': 'perplexity/llama-3.1-sonar-large-128k-online',
-  'gemini-2.0-flash': 'google/gemini-2.0-flash-exp',
+  'gemini-3.6-flash': 'google/gemini-3.6-flash',
 };
 
 const PERSONA =
@@ -82,7 +82,7 @@ async function callGeminiStream(
   signal: AbortSignal
 ): Promise<boolean> {
   const contents = buildGeminiContents(history, imageDataUrl);
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${GEMINI_KEY}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?alt=sse&key=${GEMINI_KEY}`;
 
   let res: Response;
   try {
@@ -155,7 +155,7 @@ async function callGeminiNonStream(
   signal: AbortSignal
 ): Promise<boolean> {
   const contents = buildGeminiContents(history, imageDataUrl);
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_KEY}`;
 
   let res: Response;
   try {
@@ -350,7 +350,7 @@ async function tryOpenRouter(
 }
 
 const FAILOVER_CHAIN: ModelId[] = [
-  'gemini-2.0-flash',
+  'gemini-3.6-flash',
   'gpt-4o-mini',
   'claude-3.5-sonnet',
   'perplexity',
@@ -363,7 +363,7 @@ async function tryModel(
   handlers: StreamHandlers,
   signal: AbortSignal
 ): Promise<boolean> {
-  if (model === 'gemini-2.0-flash') {
+  if (model === 'gemini-3.6-flash') {
     return tryGemini(history, imageDataUrl, handlers, signal);
   }
   return tryOpenRouter(model, history, imageDataUrl, handlers, signal);
@@ -392,8 +392,8 @@ export function streamReply(
         const success = await tryModel(selectedModel, history, imageDataUrl, handlers, abortController.signal);
         if (success || stopped) return;
 
-        if (selectedModel !== 'gemini-2.0-flash') {
-          handlers.onModelSwitch?.(selectedModel, 'gemini-2.0-flash', 'Primary model rate-limited');
+        if (selectedModel !== 'gemini-3.6-flash') {
+          handlers.onModelSwitch?.(selectedModel, 'gemini-3.6-flash', 'Primary model rate-limited');
           const fallback = await tryGemini(history, imageDataUrl, handlers, abortController.signal);
           if (fallback || stopped) return;
         }
@@ -535,7 +535,7 @@ async function tryModelWithPersona(
   handlers: StreamHandlers,
   signal: AbortSignal
 ): Promise<boolean> {
-  if (model === 'gemini-2.0-flash') {
+  if (model === 'gemini-3.6-flash') {
     return callGeminiStreamWithPersona(history, imageDataUrl, handlers, signal);
   }
   return callOpenRouterStreamWithPersona(model, history, imageDataUrl, handlers, signal);
@@ -548,7 +548,7 @@ async function callGeminiStreamWithPersona(
   signal: AbortSignal
 ): Promise<boolean> {
   const contents = buildGeminiContents(history, imageDataUrl);
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${GEMINI_KEY}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent?alt=sse&key=${GEMINI_KEY}`;
 
   let res: Response;
   try {
