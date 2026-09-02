@@ -4,7 +4,6 @@ import { ChatTab } from '@/components/ChatTab';
 import { ImageTab } from '@/components/ImageTab';
 import { VideoTab } from '@/components/VideoTab';
 import { ScriptTab } from '@/components/ScriptTab';
-import { WhatsAppPremium } from '@/components/WhatsAppPremium';
 import { GoogleSignInModal } from '@/components/GoogleSignInModal';
 import type { TabId } from '@/types';
 
@@ -81,14 +80,7 @@ export default function App() {
 
       {/* Main content area */}
       <main className="flex-1 flex flex-col min-w-0 pb-14 sm:pb-0">
-        {activeTab === 'chat' && (
-          <div className="flex-1 flex flex-col min-h-0">
-            <div className="px-3 sm:px-5 pt-4">
-              <WhatsAppPremium />
-            </div>
-            <ChatTab />
-          </div>
-        )}
+        {activeTab === 'chat' && <ChatTab />}
         {activeTab === 'image' && <ImageTab />}
         {activeTab === 'video' && <VideoTab />}
         {activeTab === 'script' && <ScriptTab />}
