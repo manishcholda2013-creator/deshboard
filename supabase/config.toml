@@ -1,0 +1,2 @@
+[functions.daily-capsule]
+verify_jwt = false
