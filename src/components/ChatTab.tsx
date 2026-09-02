@@ -20,7 +20,7 @@ const MODEL_ICONS: Record<ModelId, React.ReactNode> = {
   auto: <Zap className="w-4 h-4" />,
   'gpt-4o-mini': <Bot className="w-4 h-4" />,
   'claude-3.5-sonnet': <Sparkles className="w-4 h-4" />,
-  'gemini-3.5-flash': <Cpu className="w-4 h-4" />,
+  'gemini-2.0-flash': <Cpu className="w-4 h-4" />,
   'perplexity': <Search className="w-4 h-4" />,
 };
 
@@ -45,11 +45,11 @@ export function ChatTab() {
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
     try {
       const stored = localStorage.getItem(MODEL_KEY);
-      if (stored === 'gemini-1.5-flash') {
-        localStorage.setItem(MODEL_KEY, 'gemini-3.5-flash');
-        return 'gemini-3.5-flash';
+      if (stored === 'gemini-1.5-flash' || stored === 'gemini-3.5-flash') {
+        localStorage.setItem(MODEL_KEY, 'gemini-2.0-flash');
+        return 'gemini-2.0-flash';
       }
-      const valid: ModelId[] = ['auto', 'gemini-3.5-flash', 'gpt-4o-mini', 'claude-3.5-sonnet', 'perplexity'];
+      const valid: ModelId[] = ['auto', 'gemini-2.0-flash', 'gpt-4o-mini', 'claude-3.5-sonnet', 'perplexity'];
       const typed = stored as ModelId | null;
       return typed && valid.includes(typed) ? typed : 'auto';
     } catch {

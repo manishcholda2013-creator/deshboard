@@ -36,7 +36,7 @@ export type ModelId =
   | 'auto'
   | 'gpt-4o-mini'
   | 'claude-3.5-sonnet'
-  | 'gemini-3.5-flash'
+  | 'gemini-2.0-flash'
   | 'perplexity';
 
 export interface ModelOption {
