@@ -6,6 +6,9 @@ const AI_CHAT_ENDPOINT = `${SUPABASE_URL}/functions/v1/ai-chat`;
 export const MODELS: ModelOption[] = [
   { id: 'auto', label: 'Auto-Switch', desc: 'Automatically picks the best available model', badge: 'Smart' },
   { id: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash', desc: 'Google direct — massive free quota', badge: 'Google' },
+  { id: 'gpt-4o-mini', label: 'GPT-4o mini', desc: 'Fast, capable, great for most tasks', badge: 'OpenRouter' },
+  { id: 'claude-3.5-sonnet', label: 'Claude 3.5 Sonnet', desc: 'Excellent reasoning and writing', badge: 'OpenRouter' },
+  { id: 'perplexity', label: 'Perplexity', desc: 'Online search-augmented answers', badge: 'OpenRouter' },
 ];
 
 const PERSONA =
@@ -37,10 +40,6 @@ export interface StreamHandlers {
   onModelSwitch?: (fromModel: string, toModel: string, reason: string) => void;
 }
 
-interface GeminiPart {
-  text?: string;
-}
-
 function isPersonaQuestion(text: string): boolean {
   const lower = text.toLowerCase().trim();
   const triggers = [
@@ -54,7 +53,23 @@ function isPersonaQuestion(text: string): boolean {
 
 const PERSONA_REPLY = 'I was created by Manish.';
 
+const FAILOVER_CHAIN: ModelId[] = [
+  'gemini-3.6-flash',
+  'gpt-4o-mini',
+  'claude-3.5-sonnet',
+  'perplexity',
+];
+
+function isGeminiModel(model: ModelId): boolean {
+  return model === 'gemini-3.6-flash';
+}
+
+interface GeminiPart {
+  text?: string;
+}
+
 async function callAIStream(
+  model: ModelId,
   history: MessageContext[],
   imageDataUrl: string | undefined,
   persona: string,
@@ -68,6 +83,7 @@ async function callAIStream(
       headers: { 'Content-Type': 'application/json' },
       signal,
       body: JSON.stringify({
+        model,
         history,
         imageDataUrl,
         persona,
@@ -76,15 +92,11 @@ async function callAIStream(
         temperature: 0.8,
       }),
     });
-  } catch (err) {
-    console.error('[AI Stream] fetch error:', err);
+  } catch {
     return false;
   }
 
-  if (!res.ok || !res.body) {
-    console.error(`[AI Stream] HTTP ${res.status}`);
-    return false;
-  }
+  if (!res.ok || !res.body) return false;
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
@@ -105,18 +117,25 @@ async function callAIStream(
         if (!data || data === '[DONE]') continue;
         try {
           const event = JSON.parse(data);
-          const text =
-            event.candidates?.[0]?.content?.parts
-              ?.map((p: GeminiPart) => p.text ?? '').join('') ?? '';
-          if (text) {
-            acc += text;
-            handlers.onChunk(acc);
+          if (isGeminiModel(model)) {
+            const text =
+              event.candidates?.[0]?.content?.parts
+                ?.map((p: GeminiPart) => p.text ?? '').join('') ?? '';
+            if (text) {
+              acc += text;
+              handlers.onChunk(acc);
+            }
+          } else {
+            const delta = event.choices?.[0]?.delta?.content ?? '';
+            if (delta) {
+              acc += delta;
+              handlers.onChunk(acc);
+            }
           }
         } catch { /* skip */ }
       }
     }
-  } catch (err) {
-    console.error('[AI Stream] read error:', err);
+  } catch {
     if (acc) { handlers.onDone(); return true; }
     return false;
   }
@@ -126,56 +145,15 @@ async function callAIStream(
   return true;
 }
 
-async function callAINonStream(
+async function tryModel(
+  model: ModelId,
   history: MessageContext[],
   imageDataUrl: string | undefined,
   persona: string,
   handlers: StreamHandlers,
   signal: AbortSignal
 ): Promise<boolean> {
-  let res: Response;
-  try {
-    res = await fetch(AI_CHAT_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal,
-      body: JSON.stringify({
-        history,
-        imageDataUrl,
-        persona,
-        stream: false,
-        maxTokens: 2048,
-        temperature: 0.8,
-      }),
-    });
-  } catch {
-    return false;
-  }
-
-  if (!res.ok) return false;
-
-  try {
-    const data = await res.json();
-    const text = data.text ?? '';
-    if (!text) return false;
-    handlers.onChunk(text);
-    handlers.onDone();
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function tryAI(
-  history: MessageContext[],
-  imageDataUrl: string | undefined,
-  persona: string,
-  handlers: StreamHandlers,
-  signal: AbortSignal
-): Promise<boolean> {
-  const streamOk = await callAIStream(history, imageDataUrl, persona, handlers, signal);
-  if (streamOk || signal.aborted) return true;
-  return callAINonStream(history, imageDataUrl, persona, handlers, signal);
+  return callAIStream(model, history, imageDataUrl, persona, handlers, signal);
 }
 
 export function streamReply(
@@ -197,8 +175,34 @@ export function streamReply(
     }
 
     try {
-      const success = await tryAI(history, imageDataUrl, PERSONA, handlers, abortController.signal);
-      if (success || stopped) return;
+      if (selectedModel !== 'auto') {
+        const success = await tryModel(selectedModel, history, imageDataUrl, PERSONA, handlers, abortController.signal);
+        if (success || stopped) return;
+
+        if (selectedModel !== 'gemini-3.6-flash') {
+          handlers.onModelSwitch?.(selectedModel, 'gemini-3.6-flash', 'Primary model unavailable');
+          const fallback = await tryModel('gemini-3.6-flash', history, imageDataUrl, PERSONA, handlers, abortController.signal);
+          if (fallback || stopped) return;
+        }
+
+        if (!stopped) {
+          handlers.onChunk(fallbackText(history));
+          handlers.onDone();
+        }
+        return;
+      }
+
+      for (let i = 0; i < FAILOVER_CHAIN.length; i++) {
+        if (stopped) return;
+        const model = FAILOVER_CHAIN[i];
+        const success = await tryModel(model, history, imageDataUrl, PERSONA, handlers, abortController.signal);
+        if (success || stopped) return;
+
+        if (i < FAILOVER_CHAIN.length - 1) {
+          const next = FAILOVER_CHAIN[i + 1];
+          handlers.onModelSwitch?.(model, next, 'Rate limit or quota exceeded');
+        }
+      }
 
       if (!stopped) {
         handlers.onChunk(fallbackText(history));
@@ -246,7 +250,6 @@ export function streamScript(
 
   const modeLabel = modeLabels[mode] ?? 'YouTube Script';
   const fullPrompt = `Mode: ${modeLabel}\n\nRequest: ${prompt}`;
-
   const history: MessageContext[] = [{ role: 'user', content: fullPrompt }];
 
   const run = async () => {
@@ -257,20 +260,25 @@ export function streamScript(
     }
 
     try {
-      const success = await tryAI(history, undefined, SCRIPT_PERSONA, handlers, abortController.signal);
-      if (success || stopped) return;
+      for (let i = 0; i < FAILOVER_CHAIN.length; i++) {
+        if (stopped) return;
+        const model = FAILOVER_CHAIN[i];
+        const success = await tryModel(model, history, undefined, SCRIPT_PERSONA, handlers, abortController.signal);
+        if (success || stopped) return;
+
+        if (i < FAILOVER_CHAIN.length - 1) {
+          const next = FAILOVER_CHAIN[i + 1];
+          handlers.onModelSwitch?.(model, next, 'Rate limit or quota exceeded');
+        }
+      }
 
       if (!stopped) {
-        handlers.onChunk(
-          `I couldn't reach any AI service right now. Please try again in a moment.`
-        );
+        handlers.onChunk('I couldn\'t reach any AI service right now. Please try again in a moment.');
         handlers.onDone();
       }
     } catch {
       if (!stopped) {
-        handlers.onChunk(
-          `Something went wrong. Please try again.`
-        );
+        handlers.onChunk('Something went wrong. Please try again.');
         handlers.onDone();
       }
     }

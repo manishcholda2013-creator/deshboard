@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Menu, SquarePen, Zap, Cpu } from 'lucide-react';
+import { Menu, SquarePen, Zap, Bot, Cpu, Sparkles, Search } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { WelcomeScreen } from '@/components/WelcomeScreen';
 import { MessageList } from '@/components/MessageList';
@@ -19,6 +19,9 @@ const MODEL_KEY = 'danosu.selectedModel.v1';
 const MODEL_ICONS: Record<ModelId, React.ReactNode> = {
   auto: <Zap className="w-4 h-4" />,
   'gemini-3.6-flash': <Cpu className="w-4 h-4" />,
+  'gpt-4o-mini': <Bot className="w-4 h-4" />,
+  'claude-3.5-sonnet': <Sparkles className="w-4 h-4" />,
+  'perplexity': <Search className="w-4 h-4" />,
 };
 
 export function ChatTab() {
@@ -42,11 +45,11 @@ export function ChatTab() {
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
     try {
       const stored = localStorage.getItem(MODEL_KEY);
-      if (stored && stored !== 'auto' && stored !== 'gemini-3.6-flash') {
+      if (stored && stored !== 'auto' && stored !== 'gemini-3.6-flash' && stored !== 'gpt-4o-mini' && stored !== 'claude-3.5-sonnet' && stored !== 'perplexity') {
         localStorage.setItem(MODEL_KEY, 'gemini-3.6-flash');
         return 'gemini-3.6-flash';
       }
-      const valid: ModelId[] = ['auto', 'gemini-3.6-flash'];
+      const valid: ModelId[] = ['auto', 'gemini-3.6-flash', 'gpt-4o-mini', 'claude-3.5-sonnet', 'perplexity'];
       const typed = stored as ModelId | null;
       return typed && valid.includes(typed) ? typed : 'auto';
     } catch {
