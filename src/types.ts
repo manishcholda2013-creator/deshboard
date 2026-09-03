@@ -34,10 +34,7 @@ export interface GeneratedImage {
 
 export type ModelId =
   | 'auto'
-  | 'gpt-4o-mini'
-  | 'claude-3.5-sonnet'
-  | 'gemini-3.6-flash'
-  | 'perplexity';
+  | 'gemini-3.6-flash';
 
 export interface ModelOption {
   id: ModelId;
