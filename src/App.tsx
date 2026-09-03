@@ -7,7 +7,7 @@ import { ScriptTab } from '@/components/ScriptTab';
 import { GoogleSignInModal } from '@/components/GoogleSignInModal';
 import type { TabId } from '@/types';
 
-const AUTH_KEY = 'danosu.auth.v1';
+const AUTH_KEY = 'codeflex.auth.v1';
 
 const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: 'chat', label: 'Chat', icon: <MessageSquare className="w-4 h-4" /> },

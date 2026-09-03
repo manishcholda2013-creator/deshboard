@@ -23,7 +23,7 @@ export function WelcomeScreen({ onPick }: WelcomeScreenProps) {
         </div>
 
         <h1 className="text-3xl sm:text-4xl font-semibold text-white tracking-tight">
-          Danosu AI
+          CodeFlex AI
         </h1>
         <p className="mt-3 text-muted text-base sm:text-lg max-w-md">
           Your fluid thinking partner. Ask anything, or start with a spark.

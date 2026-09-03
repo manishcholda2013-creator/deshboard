@@ -48,7 +48,7 @@ export function ImageTab() {
   const handleDownload = (img: GeneratedImage) => {
     const a = document.createElement('a');
     a.href = img.url;
-    a.download = `danosu-${img.id}.png`;
+    a.download = `codeflex-${img.id}.png`;
     a.target = '_blank';
     a.click();
   };

@@ -13,8 +13,8 @@ function uid(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 }
 
-const AUTH_KEY = 'danosu.auth.v1';
-const MODEL_KEY = 'danosu.selectedModel.v1';
+const AUTH_KEY = 'codeflex.auth.v1';
+const MODEL_KEY = 'codeflex.selectedModel.v1';
 
 const MODEL_ICONS: Record<ModelId, React.ReactNode> = {
   auto: <Zap className="w-4 h-4" />,
@@ -204,7 +204,7 @@ export function ChatTab() {
               <Menu className="w-5 h-5" />
             </button>
             <span className="text-sm font-medium text-softText truncate">
-              {activeConversation?.title ?? 'Danosu AI'}
+              {activeConversation?.title ?? 'CodeFlex AI'}
             </span>
           </div>
           <div className="flex items-center gap-2">

@@ -54,7 +54,7 @@ export function Sidebar({
               <Settings className="w-4 h-4" />
             </button>
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center text-sm font-semibold text-white">
-              D
+              C
             </div>
           </div>
         </aside>
@@ -74,7 +74,7 @@ export function Sidebar({
         {/* Header */}
         <div className="flex items-center justify-between px-3 pt-3 pb-2">
           <span className="px-2 text-sm font-semibold text-white tracking-tight">
-            Danosu AI
+            CodeFlex AI
           </span>
           <button
             onClick={onToggle}
@@ -146,10 +146,10 @@ export function Sidebar({
         <div className="px-3 py-3 border-t border-white/5">
           <div className="flex items-center gap-3 rounded-lg hover:bg-sidebarHover px-2 py-2 transition-colors cursor-pointer">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center text-xs font-semibold text-white shrink-0">
-              D
+              C
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-white truncate">Danosu User</p>
+              <p className="text-sm text-white truncate">CodeFlex User</p>
               <p className="text-xs text-muted truncate">Free plan</p>
             </div>
             <button

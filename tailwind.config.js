@@ -40,6 +40,14 @@ export default {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0' },
         },
+        typingDot: {
+          '0%, 60%, 100%': { transform: 'translateY(0)', opacity: '0.4' },
+          '30%': { transform: 'translateY(-6px)', opacity: '1' },
+        },
+        cursorBounce: {
+          '0%, 100%': { transform: 'scaleY(0.4)', opacity: '0.5' },
+          '50%': { transform: 'scaleY(1)', opacity: '1' },
+        },
       },
       animation: {
         'wave-bar': 'waveBar 1.2s ease-in-out infinite',
@@ -47,6 +55,8 @@ export default {
         'fade-in-up': 'fadeInUp 0.4s ease-out',
         'fade-in': 'fadeIn 0.3s ease-out',
         blink: 'blink 1s step-end infinite',
+        'typing-dot': 'typingDot 1.2s ease-in-out infinite',
+        'cursor-bounce': 'cursorBounce 0.8s ease-in-out infinite',
       },
     },
   },

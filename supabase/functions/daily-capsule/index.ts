@@ -56,8 +56,8 @@ async function generateCapsule(name: string, professionLabel: string): Promise<s
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${OPENROUTER_KEY}`,
-        "HTTP-Referer": "https://danosu.ai",
-        "X-Title": "Danosu WhatsApp Assistant",
+        "HTTP-Referer": "https://hltrmbjsyanfmamgxrxr.supabase.co",
+        "X-Title": "CodeFlex WhatsApp Assistant",
       },
       body: JSON.stringify({
         model: "openai/gpt-4o-mini",

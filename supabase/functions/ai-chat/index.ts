@@ -118,7 +118,7 @@ async function openrouterStream(
       "Content-Type": "application/json",
       Authorization: `Bearer ${OPENROUTER_KEY}`,
       "HTTP-Referer": getReferer(),
-      "X-Title": "Danosu AI",
+      "X-Title": "CodeFlex AI",
     },
     signal,
     body: JSON.stringify({ model: routeModel, messages, stream: true, max_tokens: maxTokens }),
@@ -236,7 +236,7 @@ Deno.serve(async (req: Request) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${OPENROUTER_KEY}`,
         "HTTP-Referer": getReferer(),
-        "X-Title": "Danosu AI",
+        "X-Title": "CodeFlex AI",
       },
       body: JSON.stringify({ model: routeModel, messages, max_tokens: maxTokens }),
     });

@@ -38,7 +38,7 @@ export function VideoTab() {
     if (!resultUrl) return;
     const a = document.createElement('a');
     a.href = resultUrl;
-    a.download = `danosu-video-${Date.now()}.png`;
+    a.download = `codeflex-video-${Date.now()}.png`;
     a.target = '_blank';
     a.click();
   };

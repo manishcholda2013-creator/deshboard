@@ -144,7 +144,7 @@ export function ChatInput({
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={handleKey}
             rows={1}
-            placeholder={listening ? 'Listening… speak now' : 'Message Danosu AI…'}
+            placeholder={listening ? 'Listening… speak now' : 'Message CodeFlex AI…'}
             className="flex-1 bg-transparent resize-none outline-none text-[15px] text-white placeholder:text-muted/80 py-2.5 max-h-[200px] scrollbar-thin"
           />
 
@@ -190,7 +190,7 @@ export function ChatInput({
           )}
         </div>
         <p className="text-center text-xs text-muted/70 mt-2.5">
-          Danosu AI can make mistakes. Verify important info.
+          CodeFlex AI can make mistakes. Verify important info.
         </p>
       </div>
     </div>

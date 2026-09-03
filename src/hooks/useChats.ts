@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ChatMessage, Conversation } from '@/types';
 
-const STORAGE_KEY = 'danosu.chats.v1';
+const STORAGE_KEY = 'codeflex.chats.v1';
 
 function uid(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);

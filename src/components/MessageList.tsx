@@ -141,8 +141,15 @@ export function MessageList({ messages, streamingId, onRegenerate }: MessageList
                   ) : (
                     <MarkdownRenderer content={m.content} />
                   )}
-                  {isStreaming && (
-                    <span className="inline-block w-1.5 h-4 ml-0.5 bg-violet-400 align-middle animate-blink" />
+                  {isStreaming && m.content.length === 0 && (
+                    <div className="flex items-center gap-1.5 py-1">
+                      <span className="w-2 h-2 rounded-full bg-accent/60 animate-typing-dot" style={{ animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 rounded-full bg-accent/60 animate-typing-dot" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 rounded-full bg-accent/60 animate-typing-dot" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  )}
+                  {isStreaming && m.content.length > 0 && (
+                    <span className="inline-block w-[3px] h-5 ml-0.5 bg-accent align-middle rounded-sm animate-cursor-bounce" />
                   )}
                 </div>
 

@@ -52,7 +52,7 @@ export function GoogleSignInModal({ onSignIn }: GoogleSignInModalProps) {
         </div>
 
         <h1 className="text-3xl sm:text-4xl font-semibold text-white tracking-tight">
-          Welcome to Danosu AI
+          Welcome to CodeFlex AI
         </h1>
         <p className="mt-3 text-muted text-base max-w-xs">
           Sign in to start your conversation with your fluid thinking partner.
@@ -69,7 +69,7 @@ export function GoogleSignInModal({ onSignIn }: GoogleSignInModalProps) {
         </button>
 
         <p className="mt-6 text-xs text-muted/70 leading-relaxed max-w-xs">
-          By continuing, you agree to Danosu AI's Terms of Service and Privacy Policy.
+          By continuing, you agree to CodeFlex AI's Terms of Service and Privacy Policy.
         </p>
       </div>
     </div>

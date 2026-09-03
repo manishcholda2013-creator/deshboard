@@ -25,18 +25,18 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
 ];
 
 const MODELS = [
-  { id: 'danosu-ultra', label: 'Danosu Ultra', desc: 'Most capable, slower responses' },
-  { id: 'danosu-pro', label: 'Danosu Pro', desc: 'Balanced speed and intelligence' },
-  { id: 'danosu-flash', label: 'Danosu Flash', desc: 'Fastest, great for quick tasks' },
+  { id: 'codeflex-ultra', label: 'CodeFlex Ultra', desc: 'Most capable, slower responses' },
+  { id: 'codeflex-pro', label: 'CodeFlex Pro', desc: 'Balanced speed and intelligence' },
+  { id: 'codeflex-flash', label: 'CodeFlex Flash', desc: 'Fastest, great for quick tasks' },
 ];
 
 const THEMES = ['Dark', 'Light', 'System'];
 
 export function SettingsModal({ onClose }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>('profile');
-  const [selectedModel, setSelectedModel] = useState('danosu-pro');
+  const [selectedModel, setSelectedModel] = useState('codeflex-pro');
   const [selectedTheme, setSelectedTheme] = useState('Dark');
-  const [userName, setUserName] = useState('Danosu User');
+  const [userName, setUserName] = useState('CodeFlex User');
   const [instrValue, setInstrValue] = useState('');
   const [memoryEnabled, setMemoryEnabled] = useState(true);
   const [trainingEnabled, setTrainingEnabled] = useState(false);
@@ -109,7 +109,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                     rows={4}
                     value={instrValue}
                     onChange={(e) => setInstrValue(e.target.value)}
-                    placeholder="Tell Danosu AI how you'd like it to respond — your role, preferred style, what to avoid…"
+                    placeholder="Tell CodeFlex AI how you'd like it to respond — your role, preferred style, what to avoid…"
                     className="w-full bg-[#2a2a2a] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-muted outline-none focus:border-accent/60 transition-colors resize-none scrollbar-thin"
                   />
                   <p className="text-xs text-muted mt-1">{instrValue.length}/1500</p>
@@ -204,7 +204,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
               <div className="space-y-4">
                 <Toggle
                   label="Memory"
-                  desc="Let Danosu AI remember context across conversations."
+                  desc="Let CodeFlex AI remember context across conversations."
                   enabled={memoryEnabled}
                   onToggle={() => setMemoryEnabled((v) => !v)}
                 />
@@ -225,7 +225,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
               <div className="space-y-4">
                 <Toggle
                   label="Push notifications"
-                  desc="Get notified when Danosu AI responds to long tasks."
+                  desc="Get notified when CodeFlex AI responds to long tasks."
                   enabled={notifEnabled}
                   onToggle={() => setNotifEnabled((v) => !v)}
                 />
