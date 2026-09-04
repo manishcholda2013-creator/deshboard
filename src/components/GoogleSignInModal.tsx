@@ -36,12 +36,19 @@ export function GoogleSignInModal() {
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (err) {
+      console.error(err);
       const code = (err as { code?: string }).code ?? '';
       if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
         setSigningIn(false);
         return;
       }
-      setError('Sign-in failed. Please try again.');
+      if (code === 'auth/invalid-auth-provider' || code === 'auth/operation-not-allowed') {
+        setError('Google sign-in is not enabled. Enable it in Firebase Console > Authentication > Sign-in method > Google.');
+      } else if (code === 'auth/unauthorized-domain') {
+        setError('This domain is not authorized. Add it in Firebase Console > Authentication > Settings > Authorized domains.');
+      } else {
+        setError(`Sign-in failed (${code}). Check console for details.`);
+      }
       setSigningIn(false);
     }
   };
