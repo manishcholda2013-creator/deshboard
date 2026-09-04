@@ -9,8 +9,6 @@ import {
   ChevronRight,
   Check,
 } from 'lucide-react';
-import { auth } from '@/firebase';
-import { signOut } from 'firebase/auth';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -38,8 +36,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>('profile');
   const [selectedModel, setSelectedModel] = useState('codeflex-pro');
   const [selectedTheme, setSelectedTheme] = useState('Dark');
-  const firebaseUser = auth.currentUser;
-  const [userName, setUserName] = useState(firebaseUser?.displayName ?? 'User');
+  const [userName, setUserName] = useState('CodeFlex User');
   const [instrValue, setInstrValue] = useState('');
   const [memoryEnabled, setMemoryEnabled] = useState(true);
   const [trainingEnabled, setTrainingEnabled] = useState(false);
@@ -90,16 +87,12 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
             {activeTab === 'profile' && (
               <>
                 <div className="flex items-center gap-4">
-                  {firebaseUser?.photoURL ? (
-                    <img src={firebaseUser.photoURL} alt={userName} className="w-14 h-14 rounded-full object-cover shrink-0" />
-                  ) : (
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center text-xl font-bold text-white shrink-0">
-                      {userName.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center text-xl font-bold text-white shrink-0">
+                    {userName.charAt(0).toUpperCase()}
+                  </div>
                   <div>
                     <p className="text-sm text-white font-medium">{userName}</p>
-                    <p className="text-xs text-muted mt-0.5">{firebaseUser?.email ?? 'Free plan — upgrade for more'}</p>
+                    <p className="text-xs text-muted mt-0.5">Free plan — upgrade for more</p>
                   </div>
                 </div>
                 <div>
@@ -224,13 +217,6 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
                 <button className="w-full text-left px-4 py-3.5 rounded-xl border border-white/10 hover:border-white/20 text-sm text-softText hover:text-white transition-all duration-150 flex items-center justify-between">
                   Delete all data
                   <ChevronRight className="w-4 h-4 text-muted" />
-                </button>
-                <button
-                  onClick={() => signOut(auth)}
-                  className="w-full text-left px-4 py-3.5 rounded-xl border border-red-500/30 hover:border-red-500/50 hover:bg-red-500/10 text-sm text-red-400 transition-all duration-150 flex items-center justify-between"
-                >
-                  Logout
-                  <ChevronRight className="w-4 h-4 text-red-400/60" />
                 </button>
               </div>
             )}

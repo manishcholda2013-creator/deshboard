@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
-import { onAuthStateChanged, type User } from 'firebase/auth';
+import { useState } from 'react';
 import { MessageSquare, ImageIcon, Video, Sparkles, FileText } from 'lucide-react';
-import { auth } from '@/firebase';
 import { ChatTab } from '@/components/ChatTab';
 import { ImageTab } from '@/components/ImageTab';
 import { VideoTab } from '@/components/VideoTab';
 import { ScriptTab } from '@/components/ScriptTab';
 import { GoogleSignInModal } from '@/components/GoogleSignInModal';
 import type { TabId } from '@/types';
+
+const AUTH_KEY = 'codeflex.auth.v1';
 
 const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: 'chat', label: 'Chat', icon: <MessageSquare className="w-4 h-4" /> },
@@ -17,31 +17,26 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
 ];
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
-  const [authReady, setAuthReady] = useState(false);
+  const [signedIn, setSignedIn] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(AUTH_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [activeTab, setActiveTab] = useState<TabId>('chat');
 
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-      setAuthReady(true);
-    });
-    return () => unsub();
-  }, []);
+  const handleSignIn = () => {
+    setSignedIn(true);
+    try {
+      localStorage.setItem(AUTH_KEY, 'true');
+    } catch {
+      /* ignore */
+    }
+  };
 
-  if (!authReady) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-canvas">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 rounded-full border-2 border-accent/30 border-t-accent animate-spin" />
-          <p className="text-sm text-muted">Loading CodeFlex AI…</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <GoogleSignInModal />;
+  if (!signedIn) {
+    return <GoogleSignInModal onSignIn={handleSignIn} />;
   }
 
   return (

@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from '@/firebase';
 import { Waveform } from './Waveform';
+
+interface GoogleSignInModalProps {
+  onSignIn: () => void;
+}
 
 function GoogleLogo({ className = '' }: { className?: string }) {
   return (
@@ -26,31 +28,12 @@ function GoogleLogo({ className = '' }: { className?: string }) {
   );
 }
 
-export function GoogleSignInModal() {
+export function GoogleSignInModal({ onSignIn }: GoogleSignInModalProps) {
   const [signingIn, setSigningIn] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const handleGoogle = async () => {
+  const handleGoogle = () => {
     setSigningIn(true);
-    setError(null);
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (err) {
-      console.error(err);
-      const code = (err as { code?: string }).code ?? '';
-      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
-        setSigningIn(false);
-        return;
-      }
-      if (code === 'auth/invalid-auth-provider' || code === 'auth/operation-not-allowed') {
-        setError('Google sign-in is not enabled. Enable it in Firebase Console > Authentication > Sign-in method > Google.');
-      } else if (code === 'auth/unauthorized-domain') {
-        setError('This domain is not authorized. Add it in Firebase Console > Authentication > Settings > Authorized domains.');
-      } else {
-        setError(`Sign-in failed (${code}). Check console for details.`);
-      }
-      setSigningIn(false);
-    }
+    window.setTimeout(onSignIn, 700);
   };
 
   return (
@@ -82,12 +65,8 @@ export function GoogleSignInModal() {
           className="mt-9 w-full max-w-xs flex items-center justify-center gap-3 rounded-xl bg-white px-5 py-3.5 text-sm font-medium text-gray-800 hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 shadow-lg"
         >
           <GoogleLogo className="w-5 h-5" />
-          Continue with Google
+          {signingIn ? 'Signing in…' : 'Continue with Google'}
         </button>
-
-        {error && (
-          <p className="mt-4 text-sm text-red-400 animate-fade-in">{error}</p>
-        )}
 
         <p className="mt-6 text-xs text-muted/70 leading-relaxed max-w-xs">
           By continuing, you agree to CodeFlex AI's Terms of Service and Privacy Policy.
