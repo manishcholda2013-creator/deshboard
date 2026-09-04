@@ -13,7 +13,6 @@ function uid(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 }
 
-const AUTH_KEY = 'codeflex.auth.v1';
 const MODEL_KEY = 'codeflex.selectedModel.v1';
 
 const MODEL_ICONS: Record<ModelId, React.ReactNode> = {

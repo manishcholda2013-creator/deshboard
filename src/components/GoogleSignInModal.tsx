@@ -1,9 +1,7 @@
 import { useState } from 'react';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '@/firebase';
 import { Waveform } from './Waveform';
-
-interface GoogleSignInModalProps {
-  onSignIn: () => void;
-}
 
 function GoogleLogo({ className = '' }: { className?: string }) {
   return (
@@ -28,12 +26,24 @@ function GoogleLogo({ className = '' }: { className?: string }) {
   );
 }
 
-export function GoogleSignInModal({ onSignIn }: GoogleSignInModalProps) {
+export function GoogleSignInModal() {
   const [signingIn, setSigningIn] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleGoogle = () => {
+  const handleGoogle = async () => {
     setSigningIn(true);
-    window.setTimeout(onSignIn, 700);
+    setError(null);
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (err) {
+      const code = (err as { code?: string }).code ?? '';
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        setSigningIn(false);
+        return;
+      }
+      setError('Sign-in failed. Please try again.');
+      setSigningIn(false);
+    }
   };
 
   return (
@@ -65,8 +75,12 @@ export function GoogleSignInModal({ onSignIn }: GoogleSignInModalProps) {
           className="mt-9 w-full max-w-xs flex items-center justify-center gap-3 rounded-xl bg-white px-5 py-3.5 text-sm font-medium text-gray-800 hover:bg-gray-50 active:scale-[0.98] transition-all duration-200 shadow-lg"
         >
           <GoogleLogo className="w-5 h-5" />
-          {signingIn ? 'Signing in…' : 'Continue with Google'}
+          Continue with Google
         </button>
+
+        {error && (
+          <p className="mt-4 text-sm text-red-400 animate-fade-in">{error}</p>
+        )}
 
         <p className="mt-6 text-xs text-muted/70 leading-relaxed max-w-xs">
           By continuing, you agree to CodeFlex AI's Terms of Service and Privacy Policy.

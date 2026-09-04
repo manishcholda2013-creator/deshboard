@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Copy, Check, RefreshCw, ThumbsUp, ThumbsDown, FileText, ImageIcon } from 'lucide-react';
 import type { ChatMessage } from '@/types';
+import { auth } from '@/firebase';
 import { Waveform } from './Waveform';
 import { MarkdownRenderer } from './MarkdownRenderer';
 
@@ -90,6 +91,8 @@ function AttachmentPreview({ name, size, dataUrl }: { name: string; size: number
 
 export function MessageList({ messages, streamingId, onRegenerate }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const userPhotoURL = auth.currentUser?.photoURL ?? null;
+  const userInitial = (auth.currentUser?.displayName ?? 'U').charAt(0).toUpperCase();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -114,15 +117,19 @@ export function MessageList({ messages, streamingId, onRegenerate }: MessageList
           >
             <div className={`flex gap-3 max-w-[85%] ${isUser ? 'flex-row-reverse' : ''}`}>
               {/* Avatar */}
-              <div
-                className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white ${
-                  isUser
-                    ? 'bg-gradient-to-br from-blue-500 to-blue-600'
-                    : 'bg-gradient-to-br from-violet-500 to-purple-600'
-                }`}
-              >
-                {isUser ? 'D' : 'AI'}
-              </div>
+              {isUser && userPhotoURL ? (
+                <img src={userPhotoURL} alt="You" className="w-8 h-8 rounded-full shrink-0 object-cover" />
+              ) : (
+                <div
+                  className={`w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white ${
+                    isUser
+                      ? 'bg-gradient-to-br from-blue-500 to-blue-600'
+                      : 'bg-gradient-to-br from-violet-500 to-purple-600'
+                  }`}
+                >
+                  {isUser ? userInitial : 'AI'}
+                </div>
+              )}
 
               {/* Bubble + actions */}
               <div className="flex flex-col gap-1.5">

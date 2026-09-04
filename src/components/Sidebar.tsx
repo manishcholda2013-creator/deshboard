@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Plus, Trash2, Settings, X, MessageSquare } from 'lucide-react';
+import { Plus, Trash2, Settings, X, MessageSquare, LogOut } from 'lucide-react';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/firebase';
 import type { Conversation } from '@/types';
 import { SettingsModal } from './SettingsModal';
 
@@ -27,6 +29,14 @@ export function Sidebar({
   const [confirmClear, setConfirmClear] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
+  const user = auth.currentUser;
+  const displayName = user?.displayName ?? 'User';
+  const photoURL = user?.photoURL ?? null;
+  const email = user?.email ?? '';
+  const initial = displayName.charAt(0).toUpperCase();
+
+  const handleLogout = () => signOut(auth);
+
   if (collapsed) {
     return (
       <>
@@ -53,9 +63,13 @@ export function Sidebar({
             >
               <Settings className="w-4 h-4" />
             </button>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center text-sm font-semibold text-white">
-              C
-            </div>
+            {photoURL ? (
+              <img src={photoURL} alt={displayName} className="w-9 h-9 rounded-full object-cover" />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center text-sm font-semibold text-white">
+                {initial}
+              </div>
+            )}
           </div>
         </aside>
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
@@ -144,13 +158,17 @@ export function Sidebar({
 
         {/* Account footer */}
         <div className="px-3 py-3 border-t border-white/5">
-          <div className="flex items-center gap-3 rounded-lg hover:bg-sidebarHover px-2 py-2 transition-colors cursor-pointer">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center text-xs font-semibold text-white shrink-0">
-              C
-            </div>
+          <div className="flex items-center gap-3 rounded-lg hover:bg-sidebarHover px-2 py-2 transition-colors">
+            {photoURL ? (
+              <img src={photoURL} alt={displayName} className="w-8 h-8 rounded-full object-cover shrink-0" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-blue-500 flex items-center justify-center text-xs font-semibold text-white shrink-0">
+                {initial}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-white truncate">CodeFlex User</p>
-              <p className="text-xs text-muted truncate">Free plan</p>
+              <p className="text-sm text-white truncate">{displayName}</p>
+              <p className="text-xs text-muted truncate">{email || 'Free plan'}</p>
             </div>
             <button
               onClick={() => setShowSettings(true)}
@@ -158,6 +176,14 @@ export function Sidebar({
               aria-label="Settings"
             >
               <Settings className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleLogout}
+              className="p-1.5 rounded-md hover:bg-red-500/15 text-muted hover:text-red-400 transition-colors"
+              aria-label="Logout"
+              title="Logout"
+            >
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>
