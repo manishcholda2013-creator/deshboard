@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { MessageSquare, ImageIcon, Video, Sparkles, FileText } from 'lucide-react';
+import { MessageSquare, ImageIcon, Video, Sparkles, FileText, Code2 } from 'lucide-react';
 import { ChatTab } from '@/components/ChatTab';
 import { ImageTab } from '@/components/ImageTab';
 import { VideoTab } from '@/components/VideoTab';
 import { ScriptTab } from '@/components/ScriptTab';
+import { CodeforcesTab } from '@/components/CodeforcesTab';
 import { GoogleSignInModal } from '@/components/GoogleSignInModal';
 import type { TabId } from '@/types';
 
@@ -14,6 +15,7 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: 'image', label: 'Image', icon: <ImageIcon className="w-4 h-4" /> },
   { id: 'video', label: 'Video', icon: <Video className="w-4 h-4" /> },
   { id: 'script', label: 'Script', icon: <FileText className="w-4 h-4" /> },
+  { id: 'codeforces', label: 'CF Solve', icon: <Code2 className="w-4 h-4" /> },
 ];
 
 export default function App() {
@@ -84,6 +86,7 @@ export default function App() {
         {activeTab === 'image' && <ImageTab />}
         {activeTab === 'video' && <VideoTab />}
         {activeTab === 'script' && <ScriptTab />}
+        {activeTab === 'codeforces' && <CodeforcesTab />}
       </main>
     </div>
   );

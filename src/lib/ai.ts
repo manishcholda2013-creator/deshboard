@@ -4,11 +4,8 @@ const SUPABASE_URL = 'https://hltrmbjsyanfmamgxrxr.supabase.co';
 const AI_CHAT_ENDPOINT = `${SUPABASE_URL}/functions/v1/ai-chat`;
 
 export const MODELS: ModelOption[] = [
-  { id: 'auto', label: 'Auto-Switch', desc: 'Automatically picks the best available model', badge: 'Smart' },
-  { id: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash', desc: 'Google direct — massive free quota', badge: 'Google' },
-  { id: 'gpt-4o-mini', label: 'GPT-4o mini', desc: 'Fast, capable, great for most tasks', badge: 'OpenRouter' },
-  { id: 'claude-3.5-sonnet', label: 'Claude 3.5 Sonnet', desc: 'Excellent reasoning and writing', badge: 'OpenRouter' },
-  { id: 'perplexity', label: 'Perplexity', desc: 'Online search-augmented answers', badge: 'OpenRouter' },
+  { id: 'auto', label: 'Auto', desc: 'Smart routing — always picks the best available engine', badge: 'Smart' },
+  { id: 'openai-fast', label: 'GPT-OSS 20B', desc: 'Fast reasoning model, great for most tasks', badge: 'Free' },
 ];
 
 const PERSONA =
@@ -26,6 +23,33 @@ const SCRIPT_PERSONA =
   'Use markdown formatting. Write in a conversational, energetic tone. ' +
   'For hashtags, provide 15-30 relevant hashtags grouped by reach (broad, niche, micro). ' +
   'For editing tips, be specific about cuts, transitions, B-roll, music, and pacing. ' +
+  'CRITICAL RULE: Whenever any user asks "Who created you?", "Who is your developer?", "Who made you?", ' +
+  'or anything similar about your origin, you must proudly reply: "I was created by Manish."';
+
+const CODEFORCES_PERSONA =
+  'You are CodeFlex Codeforces Solver, an elite competitive programming AI. ' +
+  'You solve Codeforces problems (including 3000-rating hardest problems) with CORRECT, UNIQUE, and OPTIMAL code. ' +
+  'Your solutions must be:\n' +
+  '1. CORRECT — handle all edge cases, boundary conditions, and corner cases. Think deeply about the algorithm.\n' +
+  '2. UNIQUE — do NOT produce the standard/editorial solution. Find a different, creative, but equally correct approach. ' +
+  'Think about the problem from a completely different angle than the obvious approach.\n' +
+  '3. OPTIMAL — match or beat the editorial time and space complexity.\n' +
+  '4. WELL-EXPLAINED — explain your unique approach step by step before showing code.\n' +
+  '5. PRODUCTION-QUALITY — clean, readable code with meaningful variable names.\n\n' +
+  'Format your response as:\n' +
+  '### Problem Analysis\n' +
+  'Brief analysis of the problem constraints and what makes it hard.\n\n' +
+  '### Unique Approach\n' +
+  'Explain your creative, non-standard approach. Why is it different from the obvious/editorial solution? ' +
+  'What insight makes it work?\n\n' +
+  '### Complexity\n' +
+  'Time and space complexity with justification.\n\n' +
+  '### Solution Code\n' +
+  '```cpp\n// Complete, correct, unique solution\n...\n```\n\n' +
+  '### Why This Works\n' +
+  'Brief proof of correctness — why does this approach handle all cases?\n\n' +
+  '### Key Difference from Editorial\n' +
+  'Explicitly state how your solution differs from the standard approach.\n\n' +
   'CRITICAL RULE: Whenever any user asks "Who created you?", "Who is your developer?", "Who made you?", ' +
   'or anything similar about your origin, you must proudly reply: "I was created by Manish."';
 
@@ -53,23 +77,12 @@ function isPersonaQuestion(text: string): boolean {
 
 const PERSONA_REPLY = 'I was created by Manish.';
 
-const FAILOVER_CHAIN: ModelId[] = [
-  'gemini-3.6-flash',
-  'gpt-4o-mini',
-  'claude-3.5-sonnet',
-  'perplexity',
-];
-
-function isGeminiModel(model: ModelId): boolean {
-  return model === 'gemini-3.6-flash';
-}
-
-interface GeminiPart {
-  text?: string;
+function parseDelta(event: unknown): string {
+  const e = event as { choices?: Array<{ delta?: { content?: string } }> };
+  return e.choices?.[0]?.delta?.content ?? '';
 }
 
 async function callAIStream(
-  model: ModelId,
   history: MessageContext[],
   imageDataUrl: string | undefined,
   persona: string,
@@ -81,16 +94,15 @@ async function callAIStream(
     res = await fetch(AI_CHAT_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      signal,
       body: JSON.stringify({
-        model,
         history,
         imageDataUrl,
         persona,
         stream: true,
-        maxTokens: 2048,
-        temperature: 0.8,
+        maxTokens: 4096,
+        temperature: 0.7,
       }),
+      signal,
     });
   } catch {
     return false;
@@ -117,20 +129,10 @@ async function callAIStream(
         if (!data || data === '[DONE]') continue;
         try {
           const event = JSON.parse(data);
-          if (isGeminiModel(model)) {
-            const text =
-              event.candidates?.[0]?.content?.parts
-                ?.map((p: GeminiPart) => p.text ?? '').join('') ?? '';
-            if (text) {
-              acc += text;
-              handlers.onChunk(acc);
-            }
-          } else {
-            const delta = event.choices?.[0]?.delta?.content ?? '';
-            if (delta) {
-              acc += delta;
-              handlers.onChunk(acc);
-            }
+          const delta = parseDelta(event);
+          if (delta) {
+            acc += delta;
+            handlers.onChunk(acc);
           }
         } catch { /* skip */ }
       }
@@ -145,19 +147,8 @@ async function callAIStream(
   return true;
 }
 
-async function tryModel(
-  model: ModelId,
-  history: MessageContext[],
-  imageDataUrl: string | undefined,
-  persona: string,
-  handlers: StreamHandlers,
-  signal: AbortSignal
-): Promise<boolean> {
-  return callAIStream(model, history, imageDataUrl, persona, handlers, signal);
-}
-
 export function streamReply(
-  selectedModel: ModelId,
+  _selectedModel: ModelId,
   history: MessageContext[],
   imageDataUrl: string | undefined,
   handlers: StreamHandlers
@@ -175,34 +166,8 @@ export function streamReply(
     }
 
     try {
-      if (selectedModel !== 'auto') {
-        const success = await tryModel(selectedModel, history, imageDataUrl, PERSONA, handlers, abortController.signal);
-        if (success || stopped) return;
-
-        if (selectedModel !== 'gemini-3.6-flash') {
-          handlers.onModelSwitch?.(selectedModel, 'gemini-3.6-flash', 'Primary model unavailable');
-          const fallback = await tryModel('gemini-3.6-flash', history, imageDataUrl, PERSONA, handlers, abortController.signal);
-          if (fallback || stopped) return;
-        }
-
-        if (!stopped) {
-          handlers.onChunk(fallbackText(history));
-          handlers.onDone();
-        }
-        return;
-      }
-
-      for (let i = 0; i < FAILOVER_CHAIN.length; i++) {
-        if (stopped) return;
-        const model = FAILOVER_CHAIN[i];
-        const success = await tryModel(model, history, imageDataUrl, PERSONA, handlers, abortController.signal);
-        if (success || stopped) return;
-
-        if (i < FAILOVER_CHAIN.length - 1) {
-          const next = FAILOVER_CHAIN[i + 1];
-          handlers.onModelSwitch?.(model, next, 'Rate limit or quota exceeded');
-        }
-      }
+      const success = await callAIStream(history, imageDataUrl, PERSONA, handlers, abortController.signal);
+      if (success || stopped) return;
 
       if (!stopped) {
         handlers.onChunk(fallbackText(history));
@@ -260,17 +225,55 @@ export function streamScript(
     }
 
     try {
-      for (let i = 0; i < FAILOVER_CHAIN.length; i++) {
-        if (stopped) return;
-        const model = FAILOVER_CHAIN[i];
-        const success = await tryModel(model, history, undefined, SCRIPT_PERSONA, handlers, abortController.signal);
-        if (success || stopped) return;
+      const success = await callAIStream(history, undefined, SCRIPT_PERSONA, handlers, abortController.signal);
+      if (success || stopped) return;
 
-        if (i < FAILOVER_CHAIN.length - 1) {
-          const next = FAILOVER_CHAIN[i + 1];
-          handlers.onModelSwitch?.(model, next, 'Rate limit or quota exceeded');
-        }
+      if (!stopped) {
+        handlers.onChunk('I couldn\'t reach any AI service right now. Please try again in a moment.');
+        handlers.onDone();
       }
+    } catch {
+      if (!stopped) {
+        handlers.onChunk('Something went wrong. Please try again.');
+        handlers.onDone();
+      }
+    }
+  };
+
+  void run();
+
+  return () => {
+    stopped = true;
+    abortController.abort();
+    handlers.onDone();
+  };
+}
+
+export function streamCodeforces(
+  problemText: string,
+  language: string,
+  difficulty: string,
+  handlers: StreamHandlers
+): () => void {
+  let stopped = false;
+  const abortController = new AbortController();
+
+  const fullPrompt =
+    `Solve this Codeforces problem. Difficulty: ${difficulty}. Language: ${language}.\n\n` +
+    `IMPORTANT: Your solution must be UNIQUE — different from the editorial/standard approach — but still 100% correct.\n\n` +
+    `Problem:\n${problemText}`;
+  const history: MessageContext[] = [{ role: 'user', content: fullPrompt }];
+
+  const run = async () => {
+    if (isPersonaQuestion(problemText)) {
+      handlers.onChunk(PERSONA_REPLY);
+      handlers.onDone();
+      return;
+    }
+
+    try {
+      const success = await callAIStream(history, undefined, CODEFORCES_PERSONA, handlers, abortController.signal);
+      if (success || stopped) return;
 
       if (!stopped) {
         handlers.onChunk('I couldn\'t reach any AI service right now. Please try again in a moment.');

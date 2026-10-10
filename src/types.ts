@@ -32,12 +32,7 @@ export interface GeneratedImage {
   createdAt: number;
 }
 
-export type ModelId =
-  | 'auto'
-  | 'gemini-3.6-flash'
-  | 'gpt-4o-mini'
-  | 'claude-3.5-sonnet'
-  | 'perplexity';
+export type ModelId = 'auto' | 'openai-fast';
 
 export interface ModelOption {
   id: ModelId;
@@ -46,4 +41,4 @@ export interface ModelOption {
   badge: string;
 }
 
-export type TabId = 'chat' | 'image' | 'video' | 'script';
+export type TabId = 'chat' | 'image' | 'video' | 'script' | 'codeforces';
